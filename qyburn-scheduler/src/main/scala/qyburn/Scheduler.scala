@@ -1,41 +1,59 @@
-package qyburn
+package qyburn.scheduler
+
+// TODO: Is there a better collection to use to maintain slots?
+import scala.collection.mutable.ArrayBuffer
 
 import akka.actor._
 import akka.remote._
 
-/**
- * @author ${user.name}
- */
-object Scheduler extends App {
-  implicit val system = ActorSystem("Scheduler")
-  val localActor = system.actorOf(Props[LocalActor], name = "LocalActor")
-  val blah = new Herro()
-  localActor ! "START"
-}
+import qyburn.common._
 
-class LocalActor extends Actor {
-  val remote = context.actorSelection("akka.tcp://Worker@127.0.0.1:5150/user/RemoteActor")
-  var counter = 0
+// TODO: Planner that turns user code into execution plan
+// TODO: Allocator that scales up and down resources
+class Scheduler(policy: SchedulerPolicy) {
 
-  val address = Address("akka.tcp", "Worker", "127.0.0.1", 5150)
+  implicit val actorSystem = ActorSystem("Scheduler")
+  val schedulerActor = actorSystem.actorOf(Props(classOf[SchedulerActor], policy), "SchedulerActor")
 
-  def receive = {
-    case "START" =>
-      remote ! "Hello from the LocalActor"
-    case msg: String =>
-      println(s"LocalActor received message: '$msg'")
-      if (counter < 5) {
-        sender ! "Hello back to you"
-        counter += 1
-      }
+  def submit(tasks: Array[Task]): TaskResult = {
+    val future = schedulerActor ? new TaskArrayMessage(tasks)
+    val result = Await.result(future, Timeout(5 seconds).duration)
   }
 }
 
-class CleganeActor extends Actor {
-  println("I was created!")
+class SchedulerActor(policy: SchedulerPolicy) extends Actor {
+  var slots = new ArrayBuffer[Slot]()
 
   def receive = {
-    case msg: String =>
-      println(s"CleganeActor received message: '$msg'")
+    case TaskArrayMessage(tasks: Array[Task]) => {
+      val assignments = policy.schedule(tasks, slots)
+
+      self ! new TaskAssignmentMessage(assignments)
+    }
+    case TaskAssignmentMessage(assignments: Array[TaskAssignment]) => {
+      println("Task assignments complete. Sending tasks to slots")
+      assignments.foreach(assignment => {
+        assignment.slot.ref ! new TaskStartMessage(assignment.task)
+      })
+    }
+
+    case SlotRegisterMessage(slot: Slot) => {
+      println("Slot registered")
+
+      // TODO: check for existing slot; whatever for now
+      // TODO: May want to create Slots container class
+      slots += slot
+      sender() ! SlotRegisteredMessage(self)
+    }
+
+    // TODO: How to preserve sub type
+    case result: TaskResult => {
+      println("Received result")
+      println(result)
+    }
   }
+}
+
+trait SchedulerPolicy {
+  def schedule(tasks: Array[Task], slots: ArrayBuffer[Slot]): Array[TaskAssignment]
 }

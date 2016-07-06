@@ -7,7 +7,7 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>Worker (Clegane)</name>
+  <name>qyburn-worker</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -161,11 +161,16 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.5.0</version>
         <configuration>
-          <mainClass>qyburn.Worker</mainClass>
+          <mainClass>qyburn.worker.Worker</mainClass>
+
+          <!-- TODO: This is just terible -->
+          <additionalClasspathElements>
+            <additionalClasspathElement>../demo/target/demo-1.0-SNAPSHOT.jar</additionalClasspathElement>
+          </additionalClasspathElements>
           <!-- <executable>java</executable> -->
           <!-- <arguments>
             <argument>-classpath</argument>
-            <argument>../scheduler/target/qyburn-1.0-SNAPSHOT.jar</argument>
+            <argument>../demo/target/demo-1.0-SNAPSHOT.jar</argument>
           </arguments> -->
         </configuration>
       </plugin>

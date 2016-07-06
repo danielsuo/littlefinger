@@ -166,13 +166,14 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.5.0</version>
         <configuration>
-          <mainClass>qyburn.Scheduler</mainClass>
+          <mainClass>qyburn.scheduler.Main</mainClass>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
+        <version>2.5.2</version>
         <executions>
           <execution>
             <phase>install</phase>

@@ -1,39 +1,53 @@
-package qyburn
+package qyburn.worker
 
 import akka.actor._
+import akka.remote._
 
-/**
- * @author ${user.name}
- */
+import qyburn.common._
+
 object Worker extends App {
-  val system = ActorSystem("Worker")
-  val remoteActor = system.actorOf(Props[RemoteActor], name = "RemoteActor")
-  remoteActor ! "RemoteActor is alive!"
 
+  implicit val actorSystem = ActorSystem("Worker")
+  val workerActor = actorSystem.actorOf(Props[WorkerActor], "WorkerActor")
 
-  def urlses(cl: ClassLoader): Array[java.net.URL] = cl match {
-    case null => Array()
-    case u: java.net.URLClassLoader => u.getURLs() ++ urlses(cl.getParent)
-    case _ => urlses(cl.getParent)
-  }
+  Task.getClassPath().foreach(println);
 
-  val  urls = urlses(getClass.getClassLoader)
-  println(urls.filterNot(_.toString.contains("ivy")).mkString("\n"))
-
-  // TODO: Abstract this out https://github.com/earldouglas/akka-remote-class-loading
-  def getActorFromJar(jar: String, actor: String): ActorRef = {
-    import java.io._
-    val loader = new java.net.URLClassLoader(Array(new File(jar).toURI.toURL), this.getClass.getClassLoader)
-    val clazz = loader.loadClass(actor)
-    system.actorOf(Props(clazz.asInstanceOf[Class[Actor]]))
-  }
+  workerActor ! "START"
 }
 
-class RemoteActor extends Actor {
+class WorkerActor extends Actor {
+  // TODO: Workers may have more than one slot
+  // TODO: Workers in charge of keeping track of slots vs actual resources
+  val slot = new Slot()
+  slot.ref = self
+
+  // TODO: Should read this from environment or config file
+  // TODO: Get ActorRef instead of ActorSelection
+  var schedulerSelection = context.actorSelection("akka.tcp://Scheduler@127.0.0.1:5150/user/SchedulerActor")
+  var schedulerActor: ActorRef = _
+
   def receive = {
-    case msg: String =>
-      println(s"RemoteActor received message '$msg'")
-      val clegane = Worker.getActorFromJar("../qyburn-scheduler/target/qyburn-scheduler-1.0-SNAPSHOT.jar", "qyburn.CleganeActor")
-      sender ! "Hello from the RemoteActor"
+    case "START" => {
+      println ("Attempting to register")
+      schedulerSelection ! new SlotRegisterMessage(slot)
+      // TODO: Probably can do better than this. See http://doc.akka.io/docs/akka/snapshot/java/howto.html
+      Thread.sleep(1000)
+      self ! "START"
+    }
+    case SlotRegisteredMessage(schedulerActorRef: ActorRef) => {
+      println("Worker registered!")
+      schedulerActor = schedulerActorRef
+      context.become(receiveWhenRegistered)
+    }
+  }
+
+  def receiveWhenRegistered: Receive = {
+    case msg: String => {
+      println(msg)
+    }
+
+    case TaskStartMessage(task: Task) => {
+      schedulerActor ! task.run()
+    }
   }
 }

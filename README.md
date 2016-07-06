@@ -1,5 +1,5 @@
-# qyburn
+# Qyburn: a distributed resource manager
 
 ## Setting up
-- Run ```mvn install``` in ```qyburn-common``` and ```qyburn-scheduler```
-- Run ```mvn``` in ```qyburn-worker```
+- From the ```demo``` directory, run ```../bin/compile.sh``` and run ```mvn exec:java```
+- Run ```mvn exec:java``` from the ```worker``` directory
