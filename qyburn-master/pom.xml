@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.danielsuo</groupId>
-  <artifactId>demo</artifactId>
+  <groupId>qyburn</groupId>
+  <artifactId>qyburn-master</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>Qyburn Demo</name>
+  <name>qyburn-master</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -23,12 +23,6 @@
     <dependency>
       <groupId>qyburn</groupId>
       <artifactId>qyburn-common</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>qyburn</groupId>
-      <artifactId>qyburn-master</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
 
@@ -168,8 +162,18 @@
       </plugin>
 
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <configuration>
+          <mainClass>qyburn.master.Main</mainClass>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
+        <version>2.5.2</version>
         <executions>
           <execution>
             <phase>install</phase>
@@ -178,15 +182,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.5.0</version>
-        <configuration>
-          <mainClass>com.danielsuo.Demo</mainClass>
-        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -1,4 +1,4 @@
-package com.danielsuo
+package qyburn.benchmark
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -8,26 +8,27 @@ import scala.util.{ Success, Failure }
 import qyburn.common._
 import qyburn.master._
 
-object Demo extends App {
-  val blah: Task = new DemoTask()
-
-  val master = new Master(new DemoSchedulerPolicy())
-
-  // TODO: Handle not enough resources better than this garbage
-  Thread.sleep(5000)
-
-  master.submit(List(blah))
-    .mapTo[List[DemoTaskResult]]
-    .onComplete {
-      case Success(result) => {
-        result.foreach(taskResult => {
-          println(taskResult.result)
-        })
-      }
-      case Failure(t) => {
-        t.printStackTrace()
-      }
-    }
+object Main extends App {
+  println("Hello, world!")
+  // val blah: Task = new DemoTask()
+  //
+  // val master = new Master(new DemoSchedulerPolicy())
+  //
+  // // TODO: Handle not enough resources better than this garbage
+  // Thread.sleep(5000)
+  //
+  // master.submit(List(blah))
+  //   .mapTo[List[DemoTaskResult]]
+  //   .onComplete {
+  //     case Success(result) => {
+  //       result.foreach(taskResult => {
+  //         println(taskResult.result)
+  //       })
+  //     }
+  //     case Failure(t) => {
+  //       t.printStackTrace()
+  //     }
+  //   }
 }
 
 class DemoTask extends Task {

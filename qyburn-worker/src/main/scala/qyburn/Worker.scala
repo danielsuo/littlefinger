@@ -23,8 +23,8 @@ class WorkerActor extends Actor {
 
   // TODO: Should read this from environment or config file
   // TODO: Get ActorRef instead of ActorSelection
-  var schedulerSelection = context.actorSelection("akka.tcp://Scheduler@127.0.0.1:5150/user/SchedulerActor")
-  var schedulerActor: ActorRef = _
+  var schedulerSelection = context.actorSelection("akka.tcp://Master@127.0.0.1:5150/user/SchedulerActor")
+  // var schedulerActor: ActorRef = _
 
   def receive = {
     case "START" => {
@@ -36,7 +36,6 @@ class WorkerActor extends Actor {
     }
     case SlotRegisteredMessage(schedulerActorRef: ActorRef) => {
       println("Worker registered!")
-      schedulerActor = schedulerActorRef
       context.become(receiveWhenRegistered)
     }
   }
@@ -47,7 +46,8 @@ class WorkerActor extends Actor {
     }
 
     case TaskStartMessage(task: Task) => {
-      schedulerActor ! task.run()
+      val result: TaskResult = task.run()
+      sender ! result
     }
   }
 }
