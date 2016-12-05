@@ -1,8 +1,10 @@
 package qyburn.benchmark
 
+import qyburn.common._
+import qyburn.master._
+
 abstract class Benchmark {
-  // TODO: profiling level
-  def runTasks()
-  def collateData()
-  def analyzeData()
+  def run(): Unit
+
+  def schedulerPolicy: SchedulerPolicy
 }

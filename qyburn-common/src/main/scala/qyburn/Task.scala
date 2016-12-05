@@ -32,11 +32,9 @@ object Task extends Serializable {
 
 // TODO: Consider access to these classes (e.g., private[qyburn])
 // TODO: Consider whether we want to pass around Task, a pot. large object
-trait Task extends Serializable {
-  def descriptor: TaskDescriptor
-  def jarPath: String
-  def classNames: Array[String]
-  def run(): TaskResult
+class Task(val run: () => Any) extends Serializable {
+//  def descriptor: TaskDescriptor
+//  def run(): Any
 }
 
 class TaskDescriptor() extends Serializable {

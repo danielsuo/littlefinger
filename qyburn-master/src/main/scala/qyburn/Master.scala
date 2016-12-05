@@ -1,7 +1,7 @@
 package qyburn.master
 
 // TODO: Is there a better collection to use to maintain slots?
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
 // import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -32,16 +32,23 @@ class Master(policy: SchedulerPolicy) {
   }
 }
 
+// TODO: pull out into qyburn-scheduler and document interface
+// TODO: Add planner actor
+// TODO: Add allocator actor
+// NOTE: Don't need an actor or so many messages to accomplish, but eventually, scheduler may live in its own JVM
+// TODO: Separate SchedulerActor from scheduler policies so policies can be used independently from actors
 class SchedulerActor(policy: SchedulerPolicy) extends Actor {
   import context.dispatcher
 
   // TODO: figure out way to deal with timeouts
   implicit val timeout = Timeout(5 seconds)
-  var slots = new ArrayBuffer[Slot]()
+
+  // NOTE: List vs Array shouldn't affect us at our small size
+  var slots = new ListBuffer[Slot]()
 
   def receive = {
     case TaskListMessage(tasks: List[Task]) => {
-      val assignments = policy.schedule(tasks, slots)
+      val assignments = policy.schedule(tasks, slots.toList)
 
       val future: Future[List[TaskResult]] = ask(self, new TaskAssignmentMessage(assignments))
         .mapTo[List[TaskResult]]
@@ -76,5 +83,5 @@ class SchedulerActor(policy: SchedulerPolicy) extends Actor {
 }
 
 trait SchedulerPolicy {
-  def schedule(tasks: List[Task], slots: ArrayBuffer[Slot]): List[TaskAssignment]
+  def schedule(tasks: List[Task], slots: List[Slot]): List[TaskAssignment]
 }

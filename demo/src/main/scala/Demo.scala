@@ -1,6 +1,5 @@
 package com.danielsuo
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{ Success, Failure }
@@ -50,7 +49,7 @@ class DemoTask extends Task {
 class DemoTaskResult(val result: Int) extends TaskResult
 
 class DemoSchedulerPolicy extends SchedulerPolicy {
-  def schedule(tasks: List[Task], slots: ArrayBuffer[Slot]): List[TaskAssignment] = {
+  def schedule(tasks: List[Task], slots: List[Slot]): List[TaskAssignment] = {
     List(new TaskAssignment(tasks(0), slots(0)))
   }
 }
